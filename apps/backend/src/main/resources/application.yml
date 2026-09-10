@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: project-pilot-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/project_pilot}
+    username: ${SPRING_DATASOURCE_USERNAME:pilot_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:pilot_password_change_me}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      pool-name: PilotHikariCP
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+server:
+  port: ${BACKEND_PORT:8080}
+  servlet:
+    context-path: /
+
+jwt:
+  secret: ${JWT_SECRET:super_secret_jwt_key_at_least_64_characters_long_for_security_123456789}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 Hours
+
+ai-service:
+  url: ${AI_SERVICE_URL:http://localhost:8000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

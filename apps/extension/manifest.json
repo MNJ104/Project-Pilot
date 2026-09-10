@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Project Pilot – AI Software Architect",
+  "version": "1.0.0",
+  "description": "Capture web pages, GitHub repositories, and docs to automatically generate software architecture, database design, and REST APIs.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:8080/*",
+    "http://127.0.0.1:8080/*",
+    "https://*/*",
+    "http://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "project-pilot-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Project Pilot - AI-Powered Software Planning & Architecture Assistant",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:dashboard": "npm run dev --workspace=apps/web-dashboard",
+    "dev:extension": "npm run dev --workspace=apps/extension",
+    "build:all": "npm run build --workspaces",
+    "test:all": "npm run test --workspaces"
+  },
+  "keywords": [
+    "ai",
+    "architecture",
+    "software-planning",
+    "chrome-extension",
+    "monorepo"
+  ],
+  "author": "Project Pilot Team",
+  "license": "MIT"
+}

@@ -1,0 +1,44 @@
+# Project Pilot - Monorepo Root
+
+# Node dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build & Output
+dist/
+build/
+out/
+target/
+*.jar
+*.war
+
+# Python & AI Service
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Extension artifacts
+*.crx
+*.zip
