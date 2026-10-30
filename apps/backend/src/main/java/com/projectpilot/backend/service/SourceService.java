@@ -8,7 +8,9 @@ import com.projectpilot.backend.entity.Source;
 import com.projectpilot.backend.entity.SourceDocument;
 import com.projectpilot.backend.entity.User;
 import com.projectpilot.backend.exception.ResourceNotFoundException;
+import com.projectpilot.backend.repository.FeatureRepository;
 import com.projectpilot.backend.repository.ProjectRepository;
+import com.projectpilot.backend.repository.RequirementRepository;
 import com.projectpilot.backend.repository.SourceDocumentRepository;
 import com.projectpilot.backend.repository.SourceRepository;
 import com.projectpilot.backend.repository.UserRepository;
@@ -32,6 +34,8 @@ public class SourceService {
     private final SourceDocumentRepository sourceDocumentRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final RequirementRepository requirementRepository;
+    private final FeatureRepository featureRepository;
 
     @Transactional
     public SourceResponseDto ingestSource(UUID userId, IngestSourceDto dto) {
@@ -108,9 +112,13 @@ public class SourceService {
         detail.setCreatedAt(source.getCreatedAt() != null ? source.getCreatedAt().toString() : null);
         detail.setSummaryPreview(doc.getRawContent().length() > 200 ? doc.getRawContent().substring(0, 200) + "..." : doc.getRawContent());
         detail.setDetectedDomain(source.getSourceType());
-        detail.setRequirementsCount(5);
-        detail.setFeaturesCount(3);
-        detail.setComplexityScore("MEDIUM");
+        int reqCount = requirementRepository.findByProjectId(source.getProject().getId()).size();
+        int featCount = featureRepository.findByProjectId(source.getProject().getId()).size();
+        String complexity = reqCount > 10 ? "HIGH" : (reqCount > 4 ? "MEDIUM" : "LOW");
+
+        detail.setRequirementsCount(reqCount);
+        detail.setFeaturesCount(featCount);
+        detail.setComplexityScore(complexity);
         detail.setFeasibilityRating("HIGH");
         detail.setSuggestedNextStep("Generate Requirements & Architecture");
         detail.setRawContent(doc.getRawContent());
@@ -130,6 +138,10 @@ public class SourceService {
                 ? rawText.substring(0, 200) + "..."
                 : (rawText != null ? rawText : "");
 
+        int reqCount = requirementRepository.findByProjectId(source.getProject().getId()).size();
+        int featCount = featureRepository.findByProjectId(source.getProject().getId()).size();
+        String complexity = reqCount > 10 ? "HIGH" : (reqCount > 4 ? "MEDIUM" : "LOW");
+
         return SourceResponseDto.builder()
                 .id(source.getId())
                 .projectId(source.getProject().getId())
@@ -140,9 +152,9 @@ public class SourceService {
                 .createdAt(source.getCreatedAt() != null ? source.getCreatedAt().toString() : null)
                 .summaryPreview(summary)
                 .detectedDomain(source.getSourceType())
-                .requirementsCount(5)
-                .featuresCount(3)
-                .complexityScore("MEDIUM")
+                .requirementsCount(reqCount)
+                .featuresCount(featCount)
+                .complexityScore(complexity)
                 .feasibilityRating("HIGH")
                 .suggestedNextStep("Generate Requirements & Architecture")
                 .build();

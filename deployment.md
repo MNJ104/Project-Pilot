@@ -27,16 +27,16 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.backend
+      context: ./apps/backend
+      dockerfile: Dockerfile
     container_name: pilot_backend
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/project_pilot
-      SPRING_DATASOURCE_USERNAME: pilot_user
-      SPRING_DATASOURCE_PASSWORD: pilot_password_change_me
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-pilot_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-pilot_password_change_me}
       AI_SERVICE_URL: http://ai-service:8000
-      JWT_SECRET: super_secret_jwt_key_at_least_64_characters_long_for_security_123456789
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_at_least_64_characters_long_for_security_123456789}
     ports:
       - "8080:8080"
     depends_on:
@@ -45,8 +45,8 @@ services:
 
   ai-service:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.ai-service
+      context: ./apps/ai-service
+      dockerfile: Dockerfile
     container_name: pilot_ai_service
     environment:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
@@ -56,8 +56,8 @@ services:
 
   web-dashboard:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.web
+      context: ./apps/web-dashboard
+      dockerfile: Dockerfile
     container_name: pilot_web_dashboard
     ports:
       - "3000:80"
@@ -70,38 +70,69 @@ volumes:
 
 ---
 
-## 2. AWS Production Cloud Architecture
+## 2. Fast 1-Click Render Production Deployment
 
+A unified `render.yaml` Blueprint is located at the root of the repository.
+
+### Steps:
+1. Push your repository to GitHub.
+2. Sign in to [Render](https://render.com) and click **New > Blueprint**.
+3. Select your repository `Project-Pilot`.
+4. Render will automatically detect `render.yaml` and configure:
+   - **pilot-postgres**: Managed PostgreSQL 16 instance.
+   - **pilot-ai-service**: Python FastAPI microservice with automated health checks at `/health`.
+   - **pilot-backend**: Dockerized Spring Boot 3.2 backend with health checks at `/actuator/health`.
+   - **pilot-web-dashboard**: Static SPA frontend deployed with clean rewrites.
+5. Provide your `GEMINI_API_KEY` in the Render dashboard prompt.
+6. Click **Apply Blueprint**.
+
+---
+
+## 3. Vercel Frontend Deployment (Alternative)
+
+For maximum global edge performance, the React 18 frontend can be deployed directly to Vercel:
+
+1. Import `apps/web-dashboard` into [Vercel](https://vercel.com).
+2. Framework Preset: **Vite**.
+3. Root Directory: `apps/web-dashboard`.
+4. Set Environment Variable:
+   - `VITE_BACKEND_URL`: `https://<your-backend-url>/api/v1`
+5. Deploy. The included `apps/web-dashboard/vercel.json` ensures client-side routing works for all routes (`/`, `/login`, `/register`, `/dashboard`).
+
+---
+
+## 4. Production Health Verification
+
+Once services are deployed, verify health using the following endpoints:
+
+### Backend Health Check:
+```bash
+curl -i https://<YOUR_BACKEND_URL>/actuator/health
+# Expected 200 OK: {"status":"UP"}
 ```
-[ End User Browser / Extension ]
-               |
-               v
-      [ AWS CloudFront CDN ]
-               |
-        +------+------+
-        |             |
-        v             v
-   [ S3 Bucket ]   [ Application Load Balancer ] (ALB)
-  (React Static)      | (HTTPS SSL via ACM)
-                      +-------------------+
-                      |                   |
-                      v                   v
-              [ AWS ECS Fargate ]  [ AWS ECS Fargate ]
-              (Spring Boot API)    (Python AI Service)
-                      |                   |
-                      v                   |
-              [ Amazon RDS Postgres ] <---+
-               (Multi-AZ DB)              |
-                                          v
-                                   [ Gemini API ]
-                                   (Outbound Egress)
+
+### AI Service Health Check:
+```bash
+curl -i https://<YOUR_AI_SERVICE_URL>/health
+# Expected 200 OK: {"status":"UP","service":"project-pilot-ai-service","details":{...}}
 ```
 
-### AWS Service Component Matrix
+### AI Diagnostic Connectivity Test:
+```bash
+curl -i https://<YOUR_AI_SERVICE_URL>/ai/v1/diagnostic
+# Confirms whether GEMINI_API_KEY is configured and reachable
+```
 
-1. **Frontend Hosting**: AWS S3 + Amazon CloudFront (Global CDN with SSL/TLS).
-2. **Compute Layer**: AWS ECS (Elastic Container Service) with AWS Fargate serverless containers running in private VPC subnets.
-3. **Database Layer**: Amazon RDS PostgreSQL (Multi-AZ deployment, automated daily snapshots, storage auto-scaling).
-4. **Secret Management**: AWS Secrets Manager for storing Gemini API keys, DB credentials, and JWT signing keys.
-5. **Container Registry**: Amazon ECR (Elastic Container Registry) for backend & AI docker images.
-6. **Network & Security**: AWS ALB with Web Application Firewall (AWS WAF), Security Groups restricting database access exclusively to ECS tasks.
+### Swagger UI API Explorer:
+```
+https://<YOUR_BACKEND_URL>/swagger-ui/index.html
+```
+
+---
+
+## 5. Security & Secret Management
+
+- **GEMINI_API_KEY**: Stored exclusively as an environment variable in the AI microservice. Never exposed to web client or committed to git.
+- **JWT_SECRET**: Minimum 64-character secret key generated for production signing.
+- **CORS Configuration**: Handles wildcard authorization with `allowCredentials=true` for Web and Chrome extension cross-origin requests.
+- **Flyway Migrations**: Applied automatically on Spring Boot startup against the target PostgreSQL instance (V1 -> V2 -> V3).
