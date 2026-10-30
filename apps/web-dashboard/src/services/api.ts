@@ -1,3 +1,16 @@
+import type {
+  ArchitectureDto,
+  DatabaseDesignDto,
+  ApiEndpointDto,
+  TechStackItemDto,
+  SprintDto,
+  CostEstimateDto,
+  RiskItemDto,
+  AllArtifactsDto,
+  ChatMessageDto,
+  ChatResponseDto,
+} from '../types/ai-types';
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080/api/v1';
 
 export interface UserDto {
@@ -164,4 +177,74 @@ export const api = {
     request<void>(`/sources/${sourceId}`, {
       method: 'DELETE',
     }),
+
+  // ─── AI Generation ──────────────────────────────────────────────────
+  generateArchitecture: (projectId: string) =>
+    request<ArchitectureDto>(`/projects/${projectId}/generate/architecture`, { method: 'POST' }),
+
+  generateDatabase: (projectId: string) =>
+    request<DatabaseDesignDto>(`/projects/${projectId}/generate/database`, { method: 'POST' }),
+
+  generateApiDesign: (projectId: string) =>
+    request<ApiEndpointDto[]>(`/projects/${projectId}/generate/api-design`, { method: 'POST' }),
+
+  generateTechStack: (projectId: string) =>
+    request<TechStackItemDto[]>(`/projects/${projectId}/generate/tech-stack`, { method: 'POST' }),
+
+  generateSprints: (projectId: string) =>
+    request<SprintDto[]>(`/projects/${projectId}/generate/sprints`, { method: 'POST' }),
+
+  generateCostRisk: (projectId: string) =>
+    request<{ cost_estimate: CostEstimateDto; risks: RiskItemDto[] }>(
+      `/projects/${projectId}/generate/cost-risk`, { method: 'POST' }),
+
+  generateFullBlueprint: (projectId: string) =>
+    request<{ status: string; message: string }>(`/projects/${projectId}/generate/all`, { method: 'POST' }),
+
+  // ─── Artifact Retrieval ─────────────────────────────────────────────
+  getAllArtifacts: (projectId: string) =>
+    request<AllArtifactsDto>(`/projects/${projectId}/artifacts`),
+
+  getArchitecture: (projectId: string) =>
+    request<ArchitectureDto>(`/projects/${projectId}/architecture`),
+
+  getDatabase: (projectId: string) =>
+    request<DatabaseDesignDto>(`/projects/${projectId}/database`),
+
+  getApiDesign: (projectId: string) =>
+    request<ApiEndpointDto[]>(`/projects/${projectId}/api-design`),
+
+  getTechStack: (projectId: string) =>
+    request<TechStackItemDto[]>(`/projects/${projectId}/tech-stack`),
+
+  getSprints: (projectId: string) =>
+    request<SprintDto[]>(`/projects/${projectId}/sprints`),
+
+  getCostRisk: (projectId: string) =>
+    request<{ cost_estimate: CostEstimateDto; risks: RiskItemDto[] }>(`/projects/${projectId}/cost-risk`),
+
+  // ─── Task Kanban ────────────────────────────────────────────────────
+  updateTaskStatus: (projectId: string, taskId: string, status: string) =>
+    request<{ id: string; status: string; updated: boolean }>(
+      `/projects/${projectId}/tasks/${taskId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+
+  // ─── Chat ────────────────────────────────────────────────────────────
+  sendChatMessage: (projectId: string, messages: ChatMessageDto[]) =>
+    request<ChatResponseDto>(`/projects/${projectId}/chat`, {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+    }),
+
+  // ─── Export ─────────────────────────────────────────────────────────
+  exportMarkdown: (projectId: string) =>
+    `${BASE_URL}/projects/${projectId}/export/markdown`,
+
+  exportSql: (projectId: string) =>
+    `${BASE_URL}/projects/${projectId}/export/sql`,
+
+  exportOpenApi: (projectId: string) =>
+    `${BASE_URL}/projects/${projectId}/export/openapi`,
 };

@@ -6,10 +6,24 @@ import google.generativeai as genai
 from app.config import settings
 from app.schemas.health import HealthResponse, DiagnosticResponse
 
+# Existing routers (Phase 3)
+from app.routers.features import router as features_router
+from app.routers.requirements import router as requirements_router
+
+# Block 2 routers
+from app.routers.architecture import router as architecture_router
+from app.routers.database import router as database_router
+from app.routers.api_design import router as api_design_router
+from app.routers.tech_stack import router as tech_stack_router
+from app.routers.sprints import router as sprints_router
+from app.routers.cost_risk import router as cost_risk_router
+from app.routers.documentation import router as documentation_router
+from app.routers.chat import router as chat_router
+
 app = FastAPI(
     title="Project Pilot AI Service",
     description="Modular AI Microservice for Software Planning & Architecture Generation",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -19,6 +33,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register all routers
+app.include_router(features_router)
+app.include_router(requirements_router)
+app.include_router(architecture_router)
+app.include_router(database_router)
+app.include_router(api_design_router)
+app.include_router(tech_stack_router)
+app.include_router(sprints_router)
+app.include_router(cost_risk_router)
+app.include_router(documentation_router)
+app.include_router(chat_router)
+
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
@@ -33,9 +60,16 @@ async def health_check():
         timestamp=datetime.utcnow().isoformat(),
         details={
             "gemini_api_configured": is_gemini_set,
-            "environment": settings.ENVIRONMENT
+            "environment": settings.ENVIRONMENT,
+            "version": "2.0.0",
+            "routers": [
+                "requirements", "features", "architecture", "database",
+                "api-design", "tech-stack", "sprints", "cost-risk",
+                "documentation", "chat"
+            ]
         }
     )
+
 
 @app.get("/ai/v1/diagnostic", response_model=DiagnosticResponse, tags=["Diagnostic"])
 async def diagnostic_check():
@@ -69,6 +103,7 @@ async def diagnostic_check():
             gemini_api_reachable=False,
             message=f"Gemini API test failed: {str(e)}"
         )
+
 
 if __name__ == "__main__":
     import uvicorn
