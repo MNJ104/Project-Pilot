@@ -99,3 +99,4 @@ def test_chat_assistant():
     resp = chat(req)
     assert resp.reply is not None
     assert len(resp.reply) > 20
+

@@ -75,3 +75,4 @@ export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart, className =
     />
   );
 };
+

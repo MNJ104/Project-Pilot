@@ -152,3 +152,4 @@ export const TechStackView: React.FC<TechStackViewProps> = ({ projectId }) => {
     </div>
   );
 };
+

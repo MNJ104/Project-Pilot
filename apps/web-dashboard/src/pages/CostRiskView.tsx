@@ -268,3 +268,4 @@ export const CostRiskView: React.FC<CostRiskViewProps> = ({ projectId }) => {
     </div>
   );
 };
+

@@ -171,3 +171,4 @@ export const ArchitectureView: React.FC<ArchitectureViewProps> = ({ projectId })
     </div>
   );
 };
+

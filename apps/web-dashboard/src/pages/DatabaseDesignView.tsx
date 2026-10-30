@@ -174,3 +174,4 @@ export const DatabaseDesignView: React.FC<DatabaseDesignViewProps> = ({ projectI
     </div>
   );
 };
+
