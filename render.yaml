@@ -1,16 +1,12 @@
-services:
-  # -------------------------------------------------------------
-  # 1. PostgreSQL Database Service
-  # -------------------------------------------------------------
-  - type: postgres
-    name: pilot-postgres
-    plan: free
+databases:
+  - name: pilot-postgres
     databaseName: project_pilot
     user: pilot_user
-    ipAllowList: []
+    plan: free
 
+services:
   # -------------------------------------------------------------
-  # 2. FastAPI AI Microservice (Python)
+  # 1. FastAPI AI Microservice (Python)
   # -------------------------------------------------------------
   - type: web
     name: pilot-ai-service
@@ -27,7 +23,7 @@ services:
         value: production
 
   # -------------------------------------------------------------
-  # 3. Spring Boot Core Backend (Java)
+  # 2. Spring Boot Core Backend (Java)
   # -------------------------------------------------------------
   - type: web
     name: pilot-backend
@@ -52,7 +48,7 @@ services:
         generateValue: true
 
   # -------------------------------------------------------------
-  # 4. React Vite Web Dashboard (Frontend SPA)
+  # 3. React Vite Web Dashboard (Frontend SPA)
   # -------------------------------------------------------------
   - type: web
     name: pilot-web-dashboard
@@ -70,4 +66,3 @@ services:
           type: web
           name: pilot-backend
           property: host
-

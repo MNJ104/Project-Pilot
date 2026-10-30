@@ -24,7 +24,14 @@ public class AiServiceClient {
     public AiServiceClient(RestTemplate restTemplate,
                            @Value("${ai-service.url:http://localhost:8000}") String baseUrl) {
         this.restTemplate = restTemplate;
-        this.baseUrl = baseUrl;
+        String normalized = baseUrl != null ? baseUrl.trim() : "http://localhost:8000";
+        if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+            normalized = "http://" + normalized;
+        }
+        if (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        this.baseUrl = normalized;
     }
 
     private <T> T post(String path, AiGenerateRequest body, Class<T> responseType) {
